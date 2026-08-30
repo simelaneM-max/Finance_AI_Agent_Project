@@ -101,7 +101,11 @@ elif page == "Stock Analysis":
     if hasattr(data.columns, "levels"):
         data.columns = data.columns.get_level_values(0)
 
-    st.dataframe(data)
+    with st.expander("📋 View Raw Stock Data"):
+        st.dataframe(
+        data,
+        use_container_width=True
+    )
 
     #### Financial Calculation
 
@@ -114,8 +118,10 @@ elif page == "Stock Analysis":
         data["Daily Returns"] * 100
     )
 
-    st.dataframe(
-                data[["Close", "Daily Returns (%)"]]
+    with st.expander("📊 View Daily Returns Data"):
+        st.dataframe(
+                data[["Close", "Daily Returns (%)"]],
+                use_container_width=True
             )
 
  # Rolling Vol 
@@ -125,8 +131,10 @@ elif page == "Stock Analysis":
         )
     )
 
-    st.dataframe(
-            data[["Daily Returns (%)", "Rolling Volatilities (%)"]]
+    with st.expander("📊 View Rolling Volatilities Data"):
+        st.dataframe(
+            data[["Daily Returns (%)", "Rolling Volatilities (%)"]],
+            use_container_width=True
         )
 
  # Annualize Sharpe Ratio
@@ -352,7 +360,8 @@ elif page == "Portfolio Analytics":
     st.subheader("Portfolio Prices")
 
     #Display Data 
-    st.dataframe(prices)
+    with st.expander("📋 View Raw Stock Data"):
+        st.dataframe(prices)
 
     tab1, tab2, tab3 = st.tabs(
             ["📈 Portfolio", "📊 Risk", "⚙️ Optimization"]
@@ -668,8 +677,11 @@ elif page == "AI Insights":
     prices = m_portfolio["Close"]
     
     st.subheader("📊 Portfolio Price Data")
-    
-    st.dataframe(prices)
+
+    with st.expander("📋 View Raw Stock Data"):    
+        st.dataframe(prices,
+                     use_container_width=True
+        )
 
     ## Returns 
 
@@ -786,17 +798,26 @@ elif page == "AI Insights":
         optimal_sharpe
     )
 
-    if optimal_sharpe >= 1:
+    if optimal_sharpe > 1:
 
-        st.success(sharpe_message)
+        st.success(
+            f"{sharpe_message} "
+            f"Sharpe Ratio: {optimal_sharpe:.2f}"
+        )
 
-    elif optimal_sharpe >= 0.5:
+    elif optimal_sharpe > 0.5:
 
-        st.warning(sharpe_message)
+        st.warning(
+            f"{sharpe_message} "
+            f"Sharpe Ratio: {optimal_sharpe:.2f}"
+        )
 
     else:
 
-        st.error(sharpe_message)
+        st.error(
+            f"{sharpe_message} "
+            f"Sharpe Ratio: {optimal_sharpe:.2f}"
+        )
 
     ###  Risk Analysis
 
@@ -864,11 +885,13 @@ elif page == "AI Insights":
 
     # Expected Returns Analysis
 
+    st.header(":chart_with_upwards_trend: Expected Portfolio Return")
+
     return_message = analyze_return(
         optimal_return
     )
 
-    if optimal_return > 0.60:
+    if optimal_return > 0.15:
 
         st.success(
             f"{return_message} "
@@ -891,50 +914,35 @@ elif page == "AI Insights":
 
     ## Optimal Portfoilo Analysis
 
-    st.header("🎯 Optimal Portfoilo Analysis")
+    st.header(" :dart: Optimal Portfoilo Analysis")
 
-    if optimal_sharpe >= 1:
+    optimal_message = analyze_sharpe_ratio(
+        optimal_sharpe
+    )
 
-        st.success(
-            f"""
-            The optimized portfolio demostrates strong risk-adjusted performance.
+    st.write(
+        f"""
 
-            Expected Return: {optimal_return:.2%}
+        **Expected Return:** {optimal_return:.2%}
 
-            Portfolio Risk: {optimal_risk:.2%}
+        **Portfolio Risk:** {optimal_risk:.2%}
 
-            Sharpe Ratio: {optimal_sharpe:.2f}
-            """
+        **Sharpe Ratio:** {optimal_sharpe:.2f}
+        """
         )
 
-    elif optimal_sharpe >= 0.5:
+    if optimal_sharpe > 1:
 
-        st.info(
-            f"""
-            The optimized portfolio provides moderate risk-adjusted performance.
+        st.success(optimal_message)
 
-            Expected Return: {optimal_return:.2%}
+    elif optimal_sharpe > 0.5:
 
-            Portfolio Risk: {optimal_risk:.2%}
-
-            Sharpe Ratio: {optimal_sharpe:.2f}
-            """
-        )
+        st.info(optimal_message)
 
     else:
-
-        st.warning(
-            f"""
-            The optimized portfolio has relativelly weak risk-adjusted performance
-
-            Expected Return: {optimal_return:.2%}
-
-            Portfolio Risk: {optimal_risk:.2%}
-
-            Sharpe Ratio: {optimal_sharpe:.2f}
-            """
-        )
-
+        
+        st.warning(optimal_message)
+    
     ## Actual Allocation 
 
     st.subheader("Optimal Portfolio Allocation")
@@ -968,6 +976,8 @@ elif page == "AI Insights":
 
     ## Concentration Analysis
 
+    st.subheader(" :pushpin: Concentration Analysis")
+
     largest_weights = optimal_weights.max()
 
     largest_stock = tickers[
@@ -981,7 +991,7 @@ elif page == "AI Insights":
         st.warning(
             f"The optimized portfolio is highly concentrated in "
             f"{largest_stock}, with an allocation of "
-            f"{largest_weights: .2%}"
+            f"{largest_weights:.2%}"
         )
 
     elif largest_weights > 0.25:
@@ -989,7 +999,7 @@ elif page == "AI Insights":
         st.info(
             f"{largest_stock} has the largest allocation at "
             f"{largest_weights:.2%}. The portfolio has some "
-            f"concentration risk."
+            f"The portfolio has some concentration risk."
         )
 
     else:
