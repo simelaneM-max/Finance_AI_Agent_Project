@@ -8,9 +8,9 @@ def calculate_health_score(
     score = 0
 
     # Sharpe Ratio
-    if optimal_sharpe > 1:
+    if optimal_sharpe >= 1:
         score += 25 
-    elif optimal_sharpe > 0.5:
+    elif optimal_sharpe >= 0.5:
         score += 15
     else:
         score += 5 
@@ -26,13 +26,13 @@ def calculate_health_score(
     # Average Correlation
     if average_corr < 0.60:
         score += 25 
-    elif average_corr < 0.08:
+    elif average_corr < 0.80:
         score += 15
     else:
         score += 5 
 
     # Return
-    if optimal_return > 0.60:
+    if optimal_return > 0.15:
         score += 25
     elif optimal_return > 0.08:
         score += 15 
@@ -43,10 +43,10 @@ def calculate_health_score(
 
 def analyze_sharpe_ratio(optimal_sharpe):
 
-    if optimal_sharpe > 1:
+    if optimal_sharpe >= 1:
         return "Excellent risk-adjusted performance."
     
-    elif optimal_sharpe > 0.5:
+    elif optimal_sharpe >= 0.5:
         return "Moderate risk-adjusted performance."
     
     else:
@@ -76,7 +76,7 @@ def analyze_diversification(average_corr):
 
 def analyze_return(optimal_return):
 
-    if optimal_return > 0.60:
+    if optimal_return > 0.15:
         return "The optimized portfolio has a strong expected return."
 
     elif optimal_return > 0.08:

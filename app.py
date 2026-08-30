@@ -802,25 +802,27 @@ elif page == "AI Insights":
 
     st.subheader("Portfolio Risk")
 
+    risk_message = analyze_risk(optimal_risk)
+
     if optimal_risk < 0.15:
 
         st.success(
-            f"The portfolio has relatively low volatility "
-            f" of {optimal_risk:.2%}"
+            f"{risk_message} "
+            f"Volatility: {optimal_risk:.2%}"
         )
 
     elif optimal_risk < 0.25:
 
         st.info(
-            f"The portfolio has moderate volatility "
-            f" of {optimal_risk:.2%}"
+            f"{risk_message} "
+            f"Volatility: {optimal_risk:.2%}"
         )
 
     else:
 
         st.warning(
-            f"The portfolio has high volatility"
-            f" of {optimal_risk:.2%}"
+            f"{risk_message} "
+            f"Volatility: {optimal_risk:.2%}"
         )
 
     #Diversification Analysis
