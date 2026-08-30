@@ -455,7 +455,11 @@ elif page == "Portfolio Analytics":
 
         st.header("Covariance Matrix")
 
-        st.dataframe(cov_met)
+        with st.expander("📐 View Covariance Matrix"):
+            st.dataframe(
+            cov_met,
+            use_container_width=True
+        )
 
         ##Correlation Heatmap 
 
