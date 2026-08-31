@@ -10,9 +10,9 @@ The project combines financial engineering concepts, quantitative analysis, Pyth
 
 ## :dart: Project Objectives 
 
-The main objectives of this projects are to:
+The main objectives of this project are to:
 
-- Analyse historical data stock proces and returns 
+- Analyse historical data stock prices and returns 
 - Measure investment and portfolio risk 
 - Analyse portfolio diversification 
 - Construct portfolios using different asset weights 
@@ -42,7 +42,7 @@ Users can select an individual stock and analyse:
 
 ### 2. :bar_chart: Portfolio Analytics 
 
-Users can select multiple stocks ad construct a portfolio 
+Users can select multiple stocks and construct a portfolio 
 
 The application provides:
 
@@ -121,7 +121,7 @@ It provides an indication of the potential downside experienced by an investment
 
 Monte Carlo Simulation generates many possible portfolio outcomes using randomly generated inputs.  
 
-In this prject, Monte Carlo Simulation is used to generate a large number of possible portfolios.
+In this project, Monte Carlo Simulation is used to generate a large number of possible portfolios.
 
 The process involves:
 
@@ -140,7 +140,7 @@ The project uses **500 simulated portfolios** when constructing the Efficient Fr
 
 The Efficient Frontier represents portfolios that provide the best expected return for a given level of risk. 
 
-The project uses Monte Carlo simulation to generate possible portfolios and visualize their risk-return charateristics.
+The project uses Monte Carlo simulation to generate possible portfolios and visualize their risk-return characteristics.
 
 The resulting risk-return distribution helps identify portfolios with attractive combinations is expected return and risk. 
 
@@ -170,10 +170,10 @@ The Portfolio Health Score is a rule-based scoring system out of 100
 | Sharpe Ratio | 25 |
 | Portfolio Volatility | 25 | 
 | Expected Return | 25 |
-| Diverisification | 25 | 
+| Diversification | 25 | 
 | **Total** | **100** |
 
-The score provides a simplified summary of the portfolio's overall charateristics.
+The score provides a simplified summary of the portfolio's overall characteristics.
 
 The scoring system uses predefined thresholds to evaluate the portfolio's:
 
@@ -183,7 +183,7 @@ The scoring system uses predefined thresholds to evaluate the portfolio's:
 - Diversification 
 
 ---
-
+Portfo
 ### :hammer_and_wrench: Technologies Used 
 
 - Python 

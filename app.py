@@ -361,7 +361,10 @@ elif page == "Portfolio Analytics":
 
     #Display Data 
     with st.expander("📋 View Raw Stock Data"):
-        st.dataframe(prices)
+        st.dataframe(
+            prices, 
+            use_container_width=True
+        )
 
     tab1, tab2, tab3 = st.tabs(
             ["📈 Portfolio", "📊 Risk", "⚙️ Optimization"]
@@ -411,25 +414,35 @@ elif page == "Portfolio Analytics":
             st.error("Portfolio weights must add up to 100%")
             st.stop()
 
-        #Show the Portfolio Allocation
+        #Portfolio Allocation
+
+        st.subheader(" 🥧 Portfolio Allocation")
 
         weights_fd = pd.DataFrame({
             "Ticker": tickers,
             "Weight": weights
         })
 
-        st.dataframe(weights_fd)
+        col1, col2 = st.columns([1, 2])
 
-        #Plot Pie Chart
+        with col1:
 
-        fig = px.pie(
-            weights_fd,
-            names="Ticker",
-            values="Weight",
-            title="Portfolio Allocation"
-        )
+            st.dataframe(
+                weights_fd,
+                use_container_width=True,
+                hide_index=True
+            )
 
-        st.plotly_chart(fig, use_container_width=True)
+        with col2: #Plot Pie Chart
+
+            fig = px.pie(
+                weights_fd,
+                names="Ticker",
+                values="Weight",
+                title="Current Portfolio Allocation"
+            )
+
+            st.plotly_chart(fig, use_container_width=True)
 
     with tab2:
 
@@ -445,27 +458,46 @@ elif page == "Portfolio Analytics":
             weights.T @ cov_met @ weights
         )
 
-        # Display Results 
-        st.subheader("Portfolio Volatility")
-
-        st.metric(
-            "Annualized Volatility",
-            f"{portf_vol:.2%}"
-        )
-
-        st.header("Covariance Matrix")
-
-        with st.expander("📐 View Covariance Matrix"):
-            st.dataframe(
-            cov_met,
-            use_container_width=True
-        )
-
-        ##Correlation Heatmap 
+        ## Correlation Calculation Matrix 
 
         corr_matrix = returns.corr()
 
-        st.subheader("Correlation Heatmap")
+        upper_triangle = corr_matrix.where(
+            np.triu(
+                np.ones(corr_matrix.shape),
+                k=1
+            ).astype(bool)
+        )
+
+        average_corr = upper_triangle.stack().mean()
+
+        if np.isnan(average_corr):
+            average_corr = 0
+
+        # Display Results 
+        st.subheader(" ⚠️ Risk Summary")
+        
+        col1, col2 = st.columns(2)
+        
+        col1.metric(
+            "Annualized Volatility",
+            f"{portf_vol:.2%}"
+        )
+        
+        col2.metric(
+            "Average Correlation",
+            f"{average_corr:.2f}"
+            )
+        
+        with st.expander("📐 View Covariance Matrix"):
+            st.dataframe(
+                cov_met,
+                use_container_width=True
+            )   
+
+        ##Correlation Heatmap 
+
+        st.subheader(":black_large_square: Correlation Heatmap")
 
         fig = px.imshow(
             corr_matrix,
@@ -570,6 +602,8 @@ elif page == "Portfolio Analytics":
             portfolio_weights
         )
 
+        st.subheader(":bowling: Efficient Frontier")
+
         fig = px.scatter(
             efficient_frontier,
             x="Risk",
@@ -577,6 +611,11 @@ elif page == "Portfolio Analytics":
             color="Sharpe", 
             color_continuous_scale="Viridis",
             title="Efficient Frontier"
+        )
+
+        fig.update_layout(
+            xaxis_title="Portfolio Risk",
+            yaxis_title="Expected Return"
         )
 
             ## Highlight Optimal Portfolio 
@@ -606,10 +645,12 @@ elif page == "Portfolio Analytics":
 
         st.dataframe(optimal_df)
 
+        st.subheader(" :pushpin: Stock Summary")
+
         col1, col2, col3 = st.columns(3)
 
         col1.metric(
-            "Expected Returns",
+            "Annualized Returns",
             f"{optimal_return:.2%}"
         )
 
@@ -788,71 +829,84 @@ elif page == "AI Insights":
 
     #Display Portfolio Health Score 
 
-    st.subheader(":trophy: Portfolio Health Score")
+    st.subheader("Portfolio Summary")
 
-    st.metric(
+    col1, col2, col3, col4 = st.columns(4)
+
+    col1.metric(
         "Portfolio Health Score",
         f"{score}/100"
     )
 
-    ## Sharpe Analysis 
-    st.header(":chart_with_upwards_trend: Sharpe Ratio Analysis")
-
-    sharpe_message = analyze_sharpe_ratio(
-        optimal_sharpe
+    col2.metric(
+        "Expected Return",
+        f"{optimal_return:.2%}"
     )
 
-    if optimal_sharpe > 1:
+    col3.metric(
+        "Portfolio Risk",
+        f"{optimal_risk:.2%}"
+    )
 
-        st.success(
-            f"{sharpe_message} "
-            f"Sharpe Ratio: {optimal_sharpe:.2f}"
+    col4.metric(
+        "Sharpe Ratio",
+        f"{optimal_sharpe:.2f}"
+    )
+
+    ## Risk and Performance Analysis 
+
+    st.header(":chart_with_upwards_trend: Risk and Performance Analysis")
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+
+        st.markdown( "### Sharpe Ratio")
+
+        sharpe_message = analyze_sharpe_ratio(
+            optimal_sharpe
         )
 
-    elif optimal_sharpe > 0.5:
+        if optimal_sharpe >= 1:
+            st.success(sharpe_message)
 
-        st.warning(
-            f"{sharpe_message} "
-            f"Sharpe Ratio: {optimal_sharpe:.2f}"
+        elif optimal_sharpe >= 0.5:
+            st.warning(sharpe_message)
+
+        else:
+            st.error(sharpe_message)
+
+    with col2:
+
+        st.markdown("### Portfolio Health Score")
+
+        risk_message = analyze_risk(
+               optimal_risk
         )
 
-    else:
-
-        st.error(
-            f"{sharpe_message} "
-            f"Sharpe Ratio: {optimal_sharpe:.2f}"
-        )
-
-    ###  Risk Analysis
-
-    st.subheader("Portfolio Risk")
-
-    risk_message = analyze_risk(optimal_risk)
-
-    if optimal_risk < 0.15:
-
-        st.success(
+        if optimal_risk < 0.15:
+            
+            st.success(
             f"{risk_message} "
             f"Volatility: {optimal_risk:.2%}"
         )
 
-    elif optimal_risk < 0.25:
+        elif optimal_risk < 0.25:
 
-        st.info(
-            f"{risk_message} "
-            f"Volatility: {optimal_risk:.2%}"
-        )
+            st.info(
+                f"{risk_message} "
+                f"Volatility: {optimal_risk:.2%}"
+            )
 
-    else:
-
-        st.warning(
-            f"{risk_message} "
-            f"Volatility: {optimal_risk:.2%}"
-        )
+        else:
+            st.warning(
+                f"{risk_message} "
+                f"Volatility: {optimal_risk:.2%}"
+            )
 
     #Diversification Analysis
 
-    st.header(":chart_with_upwards_trend: Diversification")
+    st.header(" Diversification")
 
     if len(tickers) == 1:
 
@@ -889,20 +943,20 @@ elif page == "AI Insights":
 
     # Expected Returns Analysis
 
-    st.header(":chart_with_upwards_trend: Expected Portfolio Return")
+    st.header(":moneybag: Expected Portfolio Return")
 
     return_message = analyze_return(
         optimal_return
     )
 
-    if optimal_return > 0.15:
+    if optimal_return >= 0.15:
 
         st.success(
             f"{return_message} "
             f"Expected annual return: {optimal_return:.2%}"
         )
 
-    elif optimal_return > 0.08:
+    elif optimal_return >= 0.08:
 
         st.info(
             f"{return_message} "
@@ -916,40 +970,9 @@ elif page == "AI Insights":
             f"Expected annual return: {optimal_return:.2%}"
         )
 
-    ## Optimal Portfoilo Analysis
-
-    st.header(" :dart: Optimal Portfoilo Analysis")
-
-    optimal_message = analyze_sharpe_ratio(
-        optimal_sharpe
-    )
-
-    st.write(
-        f"""
-
-        **Expected Return:** {optimal_return:.2%}
-
-        **Portfolio Risk:** {optimal_risk:.2%}
-
-        **Sharpe Ratio:** {optimal_sharpe:.2f}
-        """
-        )
-
-    if optimal_sharpe > 1:
-
-        st.success(optimal_message)
-
-    elif optimal_sharpe > 0.5:
-
-        st.info(optimal_message)
-
-    else:
-        
-        st.warning(optimal_message)
-    
     ## Actual Allocation 
 
-    st.subheader("Optimal Portfolio Allocation")
+    st.subheader(":dart: Optimal Portfolio Allocation")
 
     optimal_weights = portfolio_weights[max_sharpe]
     
@@ -962,21 +985,27 @@ elif page == "AI Insights":
         optimal_df["Weight"] * 100 
     )
 
-    st.dataframe(
-        optimal_df[
-            ["Ticker", "Weight (%)"]
-        ],
-        hide_index=True
-    )
+    col1, col2 = st.columns([1, 2])
 
-    fig = px.pie(
-        optimal_df,
-        names="Ticker",
-        values="Weight (%)",
-        title="Optimal Portfolio Allocation"
-    )
+    with col1:
 
-    st.plotly_chart(fig, use_container_width=True)
+        st.dataframe(
+            optimal_df[
+                ["Ticker", "Weight (%)"]
+            ],
+            hide_index=True,
+            use_container_width=True
+        )
+
+    with col2:
+
+        fig = px.pie(
+            optimal_df,
+            names="Ticker",
+            values="Weight (%)"
+        )
+
+        st.plotly_chart(fig, use_container_width=True)
 
     ## Concentration Analysis
 
@@ -1003,7 +1032,7 @@ elif page == "AI Insights":
         st.info(
             f"{largest_stock} has the largest allocation at "
             f"{largest_weights:.2%}. The portfolio has some "
-            f"The portfolio has some concentration risk."
+            f"concentration risk."
         )
 
     else:
